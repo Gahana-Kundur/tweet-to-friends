@@ -3,6 +3,7 @@ package org.csueb.tweeter;
 import java.io.IOException;
 import java.util.logging.Logger;
 
+import javax.servlet.RequestDispatcher;
 import javax.servlet.annotation.WebServlet;
 import java.time.Instant;
 
@@ -30,7 +31,7 @@ public class TweetHandler extends HttpServlet{
 	@Override
 	  public void doPost(HttpServletRequest request, HttpServletResponse response) 
 	      throws IOException {
-		 String userName = request.getParameter("userName");  
+		 String userName = request.getParameter("username");  
 		 String userId = request.getParameter("userId"); 
 		 String tweet = request.getParameter("tweetEntry"); 
 		 
@@ -38,17 +39,17 @@ public class TweetHandler extends HttpServlet{
 				 " and tweet as " + tweet);
 		 
 		 try {
-		 long currentTime =	 Instant.now().toEpochMilli();
-		 Key entityKey = KeyFactory.createKey("TweetData", userId + "-" + currentTime);	 
-	     Entity tweetData = new Entity(entityKey);
-	     
-		 tweetData.setProperty("userName", userName);
-		 tweetData.setProperty("userId", userId);
-		 tweetData.setProperty("tweet", tweet);
-		 tweetData.setProperty("insertedAt", Long.valueOf(currentTime));
-		 
-		 DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-		 datastore.put(tweetData);
+			 long currentTime =	 Instant.now().toEpochMilli();
+			 Key entityKey = KeyFactory.createKey("TweetData", userId + "-" + currentTime);	 
+		     Entity tweetData = new Entity(entityKey);
+		     
+			 tweetData.setProperty("userName", userName);
+			 tweetData.setProperty("userId", userId);
+			 tweetData.setProperty("tweet", tweet);
+			 tweetData.setProperty("insertedAt", Long.valueOf(currentTime));
+			 
+			 DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+			 datastore.put(tweetData);
 		 } catch (Exception ex) {
 			 log.warning("Encountered error: " + Throwables.getStackTraceAsString(ex));
 		 }
@@ -56,7 +57,13 @@ public class TweetHandler extends HttpServlet{
 	    response.setContentType("text/plain");
 	    response.setCharacterEncoding("UTF-8");
 
-	    response.getWriter().print("Saved tweet from " + userName + " \r\n");
+	    String nextJSP = "/home_page.jsp";
+	    RequestDispatcher dispatcher = getServletContext().getRequestDispatcher(nextJSP);
+	    try {
+	    	dispatcher.forward(request,response);
+	    } catch (Exception ex) {
+			 log.warning("Encountered error in forwarding: " + Throwables.getStackTraceAsString(ex));
+		 }
 
 	  }
 }
